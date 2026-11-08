@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Membres — Ordre</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #eee; }
+    .btn { display: inline-block; padding: 8px 14px; background: #2a6;
+           color: white; text-decoration: none; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Membres de l'Ordre</h1>
+  <a class="btn" href="{{ url_for('ajouter') }}">+ Ajouter un membre</a>
+  <a class="btn" href="{{ url_for('export') }}">⬇ Exporter CSV</a>
+  <p>{{ membres|length }} membres</p>
+  <table>
+    <tr><th>Nom</th><th>Prénom</th><th>Statut</th><th>Année</th>
+        <th>Appartenance</th><th>Comité</th><th>Mérite</th>
+        <th>Non-séance</th><th>Code ANNO</th><th>Actions</th></tr>
+    {% for m in membres %}
+    <tr>
+      <td>{{ m.nom }}</td><td>{{ m.prenom }}</td><td>{{ m.statut }}</td>
+      <td>{{ m.annee_entree }}</td><td>{{ m.appartenance }}</td>
+      <td>{{ m.comite }}</td>
+      <td>{{ ({0: "non décoré(e)", 1: "membre", 2: "chevalier", 3: "officier",
+               4: "commandeur", 5: "praticien(ne) en chef"})[m.merite] }}</td>
+      <td>{{ m.non_seance }}</td><td><b>{{ m.code }}</b></td>
+      <td>
+        <a href="{{ url_for('modifier', mid=m.id) }}">✏️</a>
+        <a href="{{ url_for('supprimer', mid=m.id) }}"
+           onclick="return confirm('Supprimer ?')">🗑️</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
