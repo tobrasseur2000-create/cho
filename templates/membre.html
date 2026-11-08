@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ "Modifier" if m else "Ajouter" }} un membre</title>
+</head>
+<body>
+  <h1>{{ "Modifier" if m else "Ajouter" }} un membre</h1>
+  <form method="post">
+    <label>Nom <input name="nom" value="{{ m.nom if m }}" required></label><br>
+    <label>Prénom <input name="prenom" value="{{ m.prenom if m }}" required></label><br>
+    <label>Statut
+      <select name="statut">
+        <option {{ 'selected' if m and m.statut=='student' }}>student</option>
+        <option {{ 'selected' if m and m.statut=='worker' }}>worker</option>
+      </select>
+    </label><br>
+    <label>Année d'entrée (0 pour fondateurs)
+      <input name="annee_entree" type="number" min="0" required
+             value="{{ m.annee_entree if m }}">
+    </label><br>
+    <label>Appartenance
+      <select name="appartenance">
+        {% for a in ["membre", "extra-muros", "sénateur/trice",
+                     "contre-sénateur/trice", "président(e) honoraire",
+                     "grand(e)-maître(sse) honoraire", "membre fondateur",
+                     "Rector Sanatori"] %}
+        <option {{ 'selected' if m and m.appartenance==a }}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </label><br>
+    <label>Comité
+      <select name="comite">
+        {% for c in ["—", "Oedipus", "Boulimicus", "Maniacus", "Mythomanus",
+                     "Psychopathus", "Delirius", "Cerebrus"] %}
+        <option {{ 'selected' if m and m.comite==c }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </label><br>
+    <label>Mérite psychologien
+      <select name="merite">
+        <option value="0" {{ 'selected' if m and m.merite==0 }}>non décoré(e)</option>
+        <option value="1" {{ 'selected' if m and m.merite==1 }}>membre</option>
+        <option value="2" {{ 'selected' if m and m.merite==2 }}>chevalier</option>
+        <option value="3" {{ 'selected' if m and m.merite==3 }}>officier</option>
+        <option value="4" {{ 'selected' if m and m.merite==4 }}>commandeur</option>
+        <option value="5" {{ 'selected' if m and m.merite==5 }}>praticien(ne) en chef</option>
+      </select>
+    </label><br>
+    <label>Non-séance
+      <select name="non_seance">
+        {% for v in ["jamais", "1 fois", "vlekké(e)"] %}
+        <option {{ 'selected' if m and m.non_seance==v }}>{{ v }}</option>
+        {% endfor %}
+      </select>
+    </label><br>
+    <label>Régime
+      <select name="regime" id="regime" onchange="toggleDetails()">
+        <option {{ 'selected' if m and m.regime=='normal' }}>normal</option>
+        <option {{ 'selected' if m and m.regime=='végétarien' }}>végétarien</option>
+        <option {{ 'selected' if m and m.regime=='cumul' }}>cumul</option>
+        <option {{ 'selected' if m and m.regime=='allergie/intolérance' }}>allergie/intolérance</option>
+      </select>
+    </label><br>
+    <label id="regime_details_label" style="display:none">
+      Aliments concernés
+      <input name="regime_details" value="{{ m.regime_details if m }}"
+             placeholder="ex: lactose, gluten...">
+    </label><br>
+    <button>Enregistrer</button>
+    <a href="{{ url_for('index') }}">Annuler</a>
+  </form>
+  <script>
+    function toggleDetails() {
+      document.getElementById("regime_details_label").style.display =
+        document.getElementById("regime").value === "allergie/intolérance"
+          ? "block" : "none";
+    }
+    toggleDetails();
+  </script>
+</body>
+</html>
