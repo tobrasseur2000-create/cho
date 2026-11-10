@@ -26,7 +26,7 @@ class Membre(db.Model):
     titre = db.Column(db.String(50))
     annee_entree = db.Column(db.Integer)
     comite = db.Column(db.String(50))
-    merite = db.Column(db.Integer, default=0)
+    merite = db.Column(db.String(50), default="")          # ← n°1 : texte
     non_seance = db.Column(db.String(20), default="jamais")
     regime = db.Column(db.String(30), default="normal")
     regime_details = db.Column(db.String(200), default="")
@@ -58,7 +58,7 @@ def ajouter():
             titre=request.form["titre"],
             annee_entree=int(request.form["annee_entree"] or 0),
             comite=request.form["comite"],
-            merite=int(request.form["merite"] or 0),
+            merite=request.form.get("merite", ""),          # ← n°1 : plus de int()
             non_seance=request.form["non_seance"],
             regime=request.form["regime"],
             regime_details=request.form.get("regime_details", ""),
@@ -79,7 +79,7 @@ def modifier(id):
         m.titre = request.form["titre"]
         m.annee_entree = int(request.form["annee_entree"] or 0)
         m.comite = request.form["comite"]
-        m.merite = int(request.form["merite"] or 0)
+        m.merite = request.form.get("merite", "")           # ← n°1 : plus de int()
         m.non_seance = request.form["non_seance"]
         m.regime = request.form["regime"]
         m.regime_details = request.form.get("regime_details", "")
@@ -99,6 +99,8 @@ def supprimer(id):
 # Création des tables au chargement (nécessaire pour gunicorn sur Render)
 with app.app_context():
     db.create_all()
+
+
 @app.route("/fix-db")
 def fix_db():
     from sqlalchemy import text
@@ -107,12 +109,30 @@ def fix_db():
         conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS statut VARCHAR(20) DEFAULT 'student'"))
         conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS regime VARCHAR(30) DEFAULT 'normal'"))
         conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS regime_details VARCHAR(200) DEFAULT ''"))
+        # n°1 : conversion de merite en texte (pour la base existante)
+        conn.execute(text("ALTER TABLE membre ALTER COLUMN merite TYPE VARCHAR(50) USING merite::varchar"))
+        conn.execute(text("ALTER TABLE membre ALTER COLUMN merite SET DEFAULT ''"))
     return "✅ Base corrigée ! Tu peux supprimer cette route maintenant."
+
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
 import io
 import pandas as pd
+
+# n°2 (option A) : mapping chiffres → texte
+NS_MAP = {
+    "0": "jamais",
+    "1": "1 fois",
+    "2": "vlekké",
+    "jamais": "jamais",
+    "1 fois": "1 fois",
+    "vlekké": "vlekké",
+    "vlekke": "vlekké",   # au cas où l'accent saute dans l'Excel
+}
+
 
 @app.route("/import", methods=["GET", "POST"])
 def import_members():
@@ -139,6 +159,10 @@ def import_members():
                 v = row.get(col, default)
                 return default if pd.isna(v) else v
 
+            # n°2 : conversion de non_seance (0/1/2 → jamais/1 fois/vlekké)
+            ns_brut = str(get("non_seance", "0")).strip().lower()
+            non_seance = NS_MAP.get(ns_brut, "jamais")
+
             m = Membre(
                 nom=str(get("nom")).strip(),
                 prenom=str(get("prenom")).strip(),
@@ -146,8 +170,8 @@ def import_members():
                 titre=str(get("titre")).strip() or None,
                 annee_entree=int(get("annee_entree", 0)) if str(get("annee_entree", "")).strip() else None,
                 comite=str(get("comite")).strip() or None,
-                merite=int(get("merite", 0)) if str(get("merite", "")).strip() else 0,
-                non_seance=str(get("non_seance", "jamais")).strip(),
+                merite=str(get("merite")).strip(),          # ← n°1 : texte
+                non_seance=non_seance,                       # ← n°2 : converti
                 regime=str(get("regime", "normal")).strip(),
                 regime_details=str(get("regime_details")).strip(),
             )
