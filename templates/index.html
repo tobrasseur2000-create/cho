@@ -1,42 +1,46 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Membres — Ordre</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
-    th { background: #eee; }
-    .btn { display: inline-block; padding: 8px 14px; background: #2a6;
-           color: white; text-decoration: none; border-radius: 6px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>CH-O Annuaire</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: left; }
+        th { background: #f0f0f0; }
+    </style>
 </head>
 <body>
-  <h1>Membres de l'Ordre</h1>
-  <a class="btn" href="{{ url_for('ajouter') }}">+ Ajouter un membre</a>
-  <a class="btn" href="{{ url_for('export') }}">⬇ Exporter CSV</a>
-  <p>{{ membres|length }} membres</p>
-  <table>
-    <tr><th>Nom</th><th>Prénom</th><th>Statut</th><th>Année</th>
-        <th>Titre</th><th>Comité</th><th>Mérite</th>
-        <th>Non-séance</th><th>Code ANNO</th><th>Actions</th></tr>
-    {% for m in membres %}
-    <tr>
-      <td>{{ m.nom }}</td><td>{{ m.prenom }}</td><td>{{ m.statut }}</td>
-      <td>{{ m.annee_entree }}</td><td>{{ m.titre }}</td>
-      <td>{{ m.comite }}</td>
-      <td>{{ ({0: "non décoré(e)", 1: "membre", 2: "chevalier", 3: "officier",
-               4: "commandeur", 5: "praticien(ne) en chef"})[m.merite] }}</td>
-      <td>{{ m.non_seance }}</td><td><b>{{ m.code }}</b></td>
-      <td>
-        <a href="{{ url_for('modifier', mid=m.id) }}">✏️</a>
-        <a href="{{ url_for('supprimer', mid=m.id) }}"
-           onclick="return confirm('Supprimer ?')">🗑️</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+    <h1>Annuaire des membres</h1>
+    <p><a href="{{ url_for('ajouter') }}">➕ Ajouter un membre</a></p>
+    <table>
+        <tr>
+            <th>Nom</th>
+            <th>Titre</th>
+            <th>Année d'entrée</th>
+            <th>Comité</th>
+            <th>Code anno</th>
+            <th>Mérite</th>
+            <th>Non-séances</th>
+            <th>Actions</th>
+        </tr>
+        {% for m in membres %}
+        <tr>
+            <td>{{ m.nom }}</td>
+            <td>{{ m.titre }}</td>
+            <td>{{ m.annee_entree }}</td>
+            <td>{{ m.comite }}</td>
+            <td>{{ m.code_anno() }}</td>
+            <td>{{ m.merite }}</td>
+            <td>{{ m.non_seance }}</td>
+            <td>
+                <a href="{{ url_for('modifier', id=m.id) }}">✏️</a>
+                <form method="post" action="{{ url_for('supprimer', id=m.id) }}" style="display:inline">
+                    <button type="submit">🗑️</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
