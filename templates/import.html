@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Importer un fichier Excel</title>
+</head>
+<body>
+  <h1>Importer des membres depuis Excel</h1>
+  {% with messages = get_flashed_messages() %}
+    {% for msg in messages %}<p><strong>{{ msg }}</strong></p>{% endfor %}
+  {% endwith %}
+  <form method="post" enctype="multipart/form-data">
+    <input type="file" name="fichier" accept=".xlsx" required>
+    <button type="submit">Importer</button>
+  </form>
+  <p><a href="{{ url_for('index') }}">← Retour</a></p>
+</body>
+</html>
