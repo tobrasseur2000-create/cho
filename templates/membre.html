@@ -19,13 +19,13 @@
       <input name="annee_entree" type="number" min="0" required
              value="{{ m.annee_entree if m }}">
     </label><br>
-    <label>Appartenance
-      <select name="appartenance">
+    <label>Titre
+      <select name="titre">
         {% for a in ["membre", "extra-muros", "sénateur/trice",
                      "contre-sénateur/trice", "président(e) honoraire",
                      "grand(e)-maître(sse) honoraire", "membre fondateur",
                      "Rector Sanatori"] %}
-        <option {{ 'selected' if m and m.appartenance==a }}>{{ a }}</option>
+        <option {{ 'selected' if m and m.titre==a }}>{{ a }}</option>
         {% endfor %}
       </select>
     </label><br>
