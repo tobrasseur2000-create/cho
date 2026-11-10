@@ -16,11 +16,15 @@ db = SQLAlchemy(app)
 class Membre(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(100), nullable=False)
+    prenom = db.Column(db.String(100), default="")
+    statut = db.Column(db.String(20), default="student")
     titre = db.Column(db.String(50))
     annee_entree = db.Column(db.Integer)
     comite = db.Column(db.String(50))
     merite = db.Column(db.Integer, default=0)
-    non_seance = db.Column(db.Text)
+    non_seance = db.Column(db.String(20), default="jamais")
+    regime = db.Column(db.String(30), default="normal")
+    regime_details = db.Column(db.String(200), default="")
 
     def code_anno(self):
         return code_anno(self.titre, self.annee_entree, self.comite)
@@ -44,11 +48,15 @@ def ajouter():
     if request.method == "POST":
         m = Membre(
             nom=request.form["nom"],
+            prenom=request.form["prenom"],
+            statut=request.form["statut"],
             titre=request.form["titre"],
             annee_entree=int(request.form["annee_entree"] or 0),
             comite=request.form["comite"],
             merite=int(request.form["merite"] or 0),
             non_seance=request.form["non_seance"],
+            regime=request.form["regime"],
+            regime_details=request.form.get("regime_details", ""),
         )
         db.session.add(m)
         db.session.commit()
@@ -61,11 +69,15 @@ def modifier(id):
     m = Membre.query.get_or_404(id)
     if request.method == "POST":
         m.nom = request.form["nom"]
+        m.prenom = request.form["prenom"]
+        m.statut = request.form["statut"]
         m.titre = request.form["titre"]
         m.annee_entree = int(request.form["annee_entree"] or 0)
         m.comite = request.form["comite"]
         m.merite = int(request.form["merite"] or 0)
         m.non_seance = request.form["non_seance"]
+        m.regime = request.form["regime"]
+        m.regime_details = request.form.get("regime_details", "")
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("membre.html", m=m)
@@ -79,7 +91,9 @@ def supprimer(id):
     return redirect(url_for("index"))
 
 
+# Création des tables au chargement (nécessaire pour gunicorn sur Render)
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
