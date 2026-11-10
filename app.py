@@ -1,3 +1,6 @@
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import io
 import csv
 import pathlib
@@ -6,7 +9,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 folder = pathlib.Path(__file__).parent.resolve()
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(folder / "cho.db")
+database_url = os.environ.get("DATABASE_URL", "sqlite:///cho.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 db = SQLAlchemy(app)
 
 COMITES = ["—", "Oedipus", "Boulimicus", "Maniacus", "Mythomanus",
@@ -25,10 +31,10 @@ MERITES = ["", "membre", "chevalier", "officier", "commandeur",
 REGIMES = ["normal", "végétarien", "cumul", "allergie/intolérance"]
 
 
-def code_anno(appartenance, annee, comite):
+def code_anno(titre, annee, comite):
     if comite in CODES_COMITE:
         return CODES_COMITE[comite]
-    return APPARTENANCES.get(appartenance, 10000) + int(annee)
+    return APPARTENANCES.get(titre, 10000) + int(annee)
 
 
 class Membre(db.Model):
@@ -39,7 +45,7 @@ class Membre(db.Model):
     regime = db.Column(db.String(30), default="normal")
     regime_details = db.Column(db.String(200), default="")
     annee_entree = db.Column(db.Integer, nullable=False)
-    appartenance = db.Column(db.String(50), default="membre")
+    titre = db.Column(db.String(50), default="membre")
     comite = db.Column(db.String(30), default="—")
     merite = db.Column(db.Integer, default=0)
     non_seance = db.Column(db.String(20), default="jamais")
@@ -49,7 +55,7 @@ class Membre(db.Model):
 def index():
     membres = Membre.query.order_by(Membre.nom).all()
     for m in membres:
-        m.code = code_anno(m.appartenance, m.annee_entree, m.comite)
+        m.code = code_anno(m.titre, m.annee_entree, m.comite)
     return render_template("index.html", membres=membres)
 
 
@@ -61,7 +67,7 @@ def ajouter():
             statut=request.form["statut"], regime=request.form["regime"],
             regime_details=request.form.get("regime_details", ""),
             annee_entree=int(request.form["annee_entree"]),
-            appartenance=request.form["appartenance"],
+            titre=request.form["titre"],
             comite=request.form["comite"],
             merite=int(request.form["merite"]),
             non_seance=request.form["non_seance"])
@@ -81,7 +87,7 @@ def modifier(mid):
         m.regime = request.form["regime"]
         m.regime_details = request.form.get("regime_details", "")
         m.annee_entree = int(request.form["annee_entree"])
-        m.appartenance = request.form["appartenance"]
+        m.titre = request.form["titre"]
         m.comite = request.form["comite"]
         m.merite = int(request.form["merite"])
         m.non_seance = request.form["non_seance"]
@@ -102,13 +108,13 @@ def export():
     out = io.StringIO()
     w = csv.writer(out)
     w.writerow(["Nom", "Prénom", "Statut", "Régime", "Détails régime",
-                "Année entrée", "Appartenance", "Comité", "Mérite",
+                "Année entrée", "titre", "Comité", "Mérite",
                 "Non-séance", "Code ANNO"])
     for m in Membre.query.order_by(Membre.nom):
         w.writerow([m.nom, m.prenom, m.statut, m.regime, m.regime_details,
-                    m.annee_entree, m.appartenance, m.comite,
+                    m.annee_entree, m.titre, m.comite,
                     MERITES[m.merite] or "non décoré(e)", m.non_seance,
-                    code_anno(m.appartenance, m.annee_entree, m.comite)])
+                    code_anno(m.titre, m.annee_entree, m.comite)])
     return Response(out.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition":
                              "attachment;filename=membres.csv"})
