@@ -20,12 +20,12 @@
   <p>{{ membres|length }} membres</p>
   <table>
     <tr><th>Nom</th><th>Prénom</th><th>Statut</th><th>Année</th>
-        <th>Appartenance</th><th>Comité</th><th>Mérite</th>
+        <th>Titre</th><th>Comité</th><th>Mérite</th>
         <th>Non-séance</th><th>Code ANNO</th><th>Actions</th></tr>
     {% for m in membres %}
     <tr>
       <td>{{ m.nom }}</td><td>{{ m.prenom }}</td><td>{{ m.statut }}</td>
-      <td>{{ m.annee_entree }}</td><td>{{ m.appartenance }}</td>
+      <td>{{ m.annee_entree }}</td><td>{{ m.titre }}</td>
       <td>{{ m.comite }}</td>
       <td>{{ ({0: "non décoré(e)", 1: "membre", 2: "chevalier", 3: "officier",
                4: "commandeur", 5: "praticien(ne) en chef"})[m.merite] }}</td>
