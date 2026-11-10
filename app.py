@@ -1,3 +1,4 @@
+from flask import flash
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -108,3 +109,51 @@ def fix_db():
 
 if __name__ == "__main__":
     app.run(debug=True)
+import io
+import pandas as pd
+
+@app.route("/import", methods=["GET", "POST"])
+def import_members():
+    if request.method == "POST":
+        file = request.files.get("fichier")
+        if not file or file.filename == "":
+            flash("Aucun fichier choisi")
+            return redirect(url_for("import_members"))
+        try:
+            df = pd.read_excel(io.BytesIO(file.read()))
+        except Exception:
+            flash("Impossible de lire ce fichier (format .xlsx attendu)")
+            return redirect(url_for("import_members"))
+
+        # nettoie les noms de colonnes : minuscules, sans espaces
+        df.columns = [str(c).strip().lower().replace(" ", "_") for c in df.columns]
+
+        created = 0
+        for _, row in df.iterrows():
+            if pd.isna(row.get("nom")):
+                continue  # ligne sans nom → ignorée
+
+            def get(col, default=""):
+                v = row.get(col, default)
+                return default if pd.isna(v) else v
+
+            m = Membre(
+                nom=str(get("nom")).strip(),
+                prenom=str(get("prenom")).strip(),
+                statut=str(get("statut", "student")).strip(),
+                titre=str(get("titre")).strip() or None,
+                annee_entree=int(get("annee_entree", 0)) if str(get("annee_entree", "")).strip() else None,
+                comite=str(get("comite")).strip() or None,
+                merite=int(get("merite", 0)) if str(get("merite", "")).strip() else 0,
+                non_seance=str(get("non_seance", "jamais")).strip(),
+                regime=str(get("regime", "normal")).strip(),
+                regime_details=str(get("regime_details")).strip(),
+            )
+            db.session.add(m)
+            created += 1
+
+        db.session.commit()
+        flash(f"✅ {created} membres importés !")
+        return redirect(url_for("index"))
+
+    return render_template("import.html")
