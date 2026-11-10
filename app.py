@@ -20,7 +20,7 @@ COMITES = ["—", "Oedipus", "Boulimicus", "Maniacus", "Mythomanus",
 CODES_COMITE = {"Oedipus": 100000, "Boulimicus": 200000, "Maniacus": 300000,
                 "Mythomanus": 400000, "Psychopathus": 500000,
                 "Delirius": 600000, "Cerebrus": 700000}
-APPARTENANCES = {
+TITRES = {
     "membre": 10000, "président(e) honoraire": 10000,
     "grand(e)-maître(sse) honoraire": 10000, "contre-sénateur/trice": 10000,
     "extra-muros": 20000, "sénateur/trice": 30000, "membre fondateur": 30000,
@@ -34,7 +34,7 @@ REGIMES = ["normal", "végétarien", "cumul", "allergie/intolérance"]
 def code_anno(titre, annee, comite):
     if comite in CODES_COMITE:
         return CODES_COMITE[comite]
-    return APPARTENANCES.get(titre, 10000) + int(annee)
+    return TITRES.get(titre, 10000) + int(annee)
 
 
 class Membre(db.Model):
