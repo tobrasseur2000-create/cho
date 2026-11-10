@@ -6,6 +6,8 @@ from datetime import date
 
 app = Flask(__name__)
 
+app.secret_key = "change-moi-par-une-phrase-secrete"
+
 database_url = os.environ.get("DATABASE_URL", "sqlite:///cho.db")
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
