@@ -1,8 +1,12 @@
+import io
+import csv
+import pathlib
 from flask import Flask, render_template, request, redirect, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 
+folder = pathlib.Path(__file__).parent.resolve()
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cho.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + str(folder / "cho.db")
 db = SQLAlchemy(app)
 
 COMITES = ["—", "Oedipus", "Boulimicus", "Maniacus", "Mythomanus",
