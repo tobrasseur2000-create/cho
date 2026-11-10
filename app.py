@@ -96,6 +96,15 @@ def supprimer(id):
 # Création des tables au chargement (nécessaire pour gunicorn sur Render)
 with app.app_context():
     db.create_all()
+@app.route("/fix-db")
+def fix_db():
+    from sqlalchemy import text
+    with db.engine.begin() as conn:
+        conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS prenom VARCHAR(100) DEFAULT ''"))
+        conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS statut VARCHAR(20) DEFAULT 'student'"))
+        conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS regime VARCHAR(30) DEFAULT 'normal'"))
+        conn.execute(text("ALTER TABLE membre ADD COLUMN IF NOT EXISTS regime_details VARCHAR(200) DEFAULT ''"))
+    return "✅ Base corrigée ! Tu peux supprimer cette route maintenant."
 
 if __name__ == "__main__":
     app.run(debug=True)
