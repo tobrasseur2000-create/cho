@@ -12,7 +12,11 @@
 </head>
 <body>
     <h1>Annuaire des membres</h1>
-    <p><a href="{{ url_for('ajouter') }}">➕ Ajouter un membre</a></p>
+    <p>
+  <a href="{{ url_for('ajouter') }}">➕ Ajouter un membre</a>
+  &nbsp;|&nbsp;
+  <a href="{{ url_for('import_members') }}">📥 Importer depuis Excel</a>
+</p>
     <table>
         <tr>
             <th>Prénom</th>
